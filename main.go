@@ -21,12 +21,14 @@ func main() {
 		log.Fatalf("Error reading config: %v", err)
 	}
 
-	dbURL := cfg.DBURL
-	db, err := sql.Open("postgres", dbURL)
-
+	db, err := sql.Open("postgres", cfg.DBURL)
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	defer db.Close()
 	dbQueries := database.New(db)
 
-	s := &state{
+	programState := &state{
 		db:  dbQueries,
 		cfg: &cfg,
 	}
@@ -42,7 +44,7 @@ func main() {
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
 
-	error := cmds.run(s, command{Name: cmdName, Args: cmdArgs})
+	error := cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
 	if error != nil {
 		log.Fatal(err)
 	}
