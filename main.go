@@ -36,6 +36,9 @@ func main() {
 	cmds := &commands{registeredCommands: make(map[string]func(*state, command) error)}
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerReset)
+	cmds.register("users", handlerUsers)
+	cmds.register("agg", handlerAgg)
 
 	if len(os.Args) < 2 {
 		log.Fatal("Usage: cli <command> [args...]")
@@ -44,8 +47,7 @@ func main() {
 	cmdName := os.Args[1]
 	cmdArgs := os.Args[2:]
 
-	error := cmds.run(programState, command{Name: cmdName, Args: cmdArgs})
-	if error != nil {
+	if err = cmds.run(programState, command{Name: cmdName, Args: cmdArgs}); err != nil {
 		log.Fatal(err)
 	}
 }

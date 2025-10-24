@@ -11,3 +11,9 @@ RETURNING *;
 -- name: GetUser :one
 SELECT * from users
 WHERE name = $1::TEXT;
+
+-- name: Reset :exec
+DELETE FROM users;
+
+-- name: GetALLUsers :many
+SELECT name from users;

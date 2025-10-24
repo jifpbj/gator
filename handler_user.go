@@ -11,6 +11,31 @@ import (
 	"github.com/lib/pq"
 )
 
+func handlerUsers(s *state, cmd command) error {
+	allUsers, err := s.db.GetALLUsers(context.Background())
+	if err != nil {
+		fmt.Printf("could not get users: %s", err)
+		return err
+	}
+	for _, user := range allUsers {
+		if user == s.cfg.CurrentUserName {
+			fmt.Println("*", user, "(current)")
+		} else {
+			fmt.Println("*", user)
+		}
+	}
+	return nil
+}
+
+func handlerReset(s *state, cmd command) error {
+	err := s.db.Reset(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not reset database: %w", err)
+	}
+	fmt.Println("Database reset successfully")
+	return nil
+}
+
 func handlerRegister(s *state, cmd command) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("needs an argument for %s", cmd.Name)

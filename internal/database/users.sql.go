@@ -47,6 +47,33 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 	return i, err
 }
 
+const getALLUsers = `-- name: GetALLUsers :many
+SELECT name from users
+`
+
+func (q *Queries) GetALLUsers(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getALLUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUser = `-- name: GetUser :one
 SELECT id, created_at, updated_at, name from users
 WHERE name = $1::TEXT
@@ -62,4 +89,13 @@ func (q *Queries) GetUser(ctx context.Context, dollar_1 string) (User, error) {
 		&i.Name,
 	)
 	return i, err
+}
+
+const reset = `-- name: Reset :exec
+DELETE FROM users
+`
+
+func (q *Queries) Reset(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, reset)
+	return err
 }
