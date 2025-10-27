@@ -14,11 +14,6 @@ func handlerAddFeed(s *state, cmd command, user database.User) error {
 		return fmt.Errorf("needs 2 arguments for %s: name, url ", cmd.Name)
 	}
 
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("could not get user: %w", err)
-	}
-
 	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),

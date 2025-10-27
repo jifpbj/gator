@@ -13,7 +13,6 @@ func middlewareLoggedIn(handler func(s *state, cmd command, user database.User) 
 		if err != nil {
 			return fmt.Errorf("error logging in: %v", err)
 		}
-		err = handler(s, cmd, user)
-		return err
+		return handler(s, cmd, user)
 	}
 }
