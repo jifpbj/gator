@@ -9,7 +9,7 @@ import (
 	"github.com/jifpbj/gator/internal/database"
 )
 
-func handlerFollow(s *state, cmd command) error {
+func handlerFollow(s *state, cmd command, user database.User) error {
 	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return err
@@ -39,7 +39,7 @@ func handlerFollow(s *state, cmd command) error {
 	return nil
 }
 
-func handlerListFeedFollows(s *state, cmd command) error {
+func handlerListFeedFollows(s *state, cmd command, user database.User) error {
 	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
 	if err != nil {
 		return err

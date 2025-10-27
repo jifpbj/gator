@@ -9,7 +9,7 @@ import (
 	"github.com/jifpbj/gator/internal/database"
 )
 
-func handlerAddFeed(s *state, cmd command) error {
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.Args) != 2 {
 		return fmt.Errorf("needs 2 arguments for %s: name, url ", cmd.Name)
 	}
