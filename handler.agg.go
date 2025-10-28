@@ -2,14 +2,60 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"time"
 )
 
 func handlerAgg(s *state, cmd command) error {
-	feed, err := fetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return fmt.Errorf("failed to fetch feed: %w", err)
+	if len(cmd.Args) != 1 {
+		return fmt.Errorf("agg needs 1 arg; time between requests")
 	}
-	fmt.Printf("%v\n", feed)
+
+	timeBetweenRequests, err := time.ParseDuration(cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("error parsing time between requests: %w", err)
+	}
+
+	fmt.Printf("Collecting feeds every %s\n", timeBetweenRequests)
+
+	ticker := time.NewTicker(timeBetweenRequests)
+	defer ticker.Stop()
+
+	if err := scrapeFeeds(s); err != nil {
+		return err
+	}
+	for {
+		<-ticker.C
+		if err := scrapeFeeds(s); err != nil {
+			return err
+		}
+	}
+}
+
+func scrapeFeeds(s *state) error {
+	nextFeed, err := s.db.GetNextFeedToFetch(context.Background())
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+
+	// get RSS feed
+	RSSFeed, err := fetchFeed(context.Background(), nextFeed.Url)
+	if err != nil {
+		return fmt.Errorf("error getting RSS from next Feed: %w", err)
+	}
+
+	err = s.db.MarkFeedFetched(context.Background(), nextFeed.ID)
+	if err != nil {
+		return fmt.Errorf("couldn't mark feed as fetched: %w", err)
+	}
+
+	fmt.Println("Printing from Feed:", nextFeed.Name)
+	for _, item := range RSSFeed.Channel.Item {
+		fmt.Println("* ", item.Title)
+	}
+	fmt.Println("============End of Feed============")
+	fmt.Println("===================================")
 	return nil
 }
